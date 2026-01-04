@@ -204,6 +204,17 @@ solve.onclick = function () {
   stopTimer();
 };
 
+function checkCompletion() {
+  for (var i = 0; i < 9; i++) {
+    for (var j = 0; j < 9; j++) {
+      if (parseInt(board[i][j]) !== parseInt(solvedBoard[i][j])) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
 document.onkeydown = function (e) {
   if (selectedCell) {
     var val = parseInt(e.key);
@@ -216,9 +227,23 @@ document.onkeydown = function (e) {
       // Ensure row is initialized if we are inputting on a blank board
       if (!board[r]) board[r] = [];
       board[r][c] = val;
+
+      if (val != solvedBoard[r][c]) {
+        selectedCell.style.color = "red";
+      } else {
+        selectedCell.style.color = "green";
+        if (checkCompletion()) {
+          stopTimer();
+          // Small delay to allow UI to update before alert
+          setTimeout(() => {
+            alert("You did it!");
+          }, 100);
+        }
+      }
     } else if (e.key == "Backspace" || e.key == "Delete") {
       selectedCell.innerText = "";
       if (board[r]) board[r][c] = 0;
+      selectedCell.style.color = "black"; // Reset color on clear
     }
   }
 };
