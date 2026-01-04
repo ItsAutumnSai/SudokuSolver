@@ -1,9 +1,18 @@
 var arr = [[], [], [], [], [], [], [], [], []];
 var temp = [[], [], [], [], [], [], [], [], []];
 
+var selectedCell = null;
+
 for (var i = 0; i < 9; i++) {
   for (var j = 0; j < 9; j++) {
     arr[i][j] = document.getElementById(i * 9 + j);
+    arr[i][j].onclick = function () {
+      if (selectedCell) {
+        selectedCell.classList.remove("selected");
+      }
+      selectedCell = this;
+      selectedCell.classList.add("selected");
+    };
   }
 }
 
@@ -193,4 +202,23 @@ function solveSudoku(board) {
 solve.onclick = function () {
   changeBoard(solvedBoard);
   stopTimer();
+};
+
+document.onkeydown = function (e) {
+  if (selectedCell) {
+    var val = parseInt(e.key);
+    var id = parseInt(selectedCell.id);
+    var r = Math.floor(id / 9);
+    var c = id % 9;
+
+    if (val > 0 && val < 10) {
+      selectedCell.innerText = val;
+      // Ensure row is initialized if we are inputting on a blank board
+      if (!board[r]) board[r] = [];
+      board[r][c] = val;
+    } else if (e.key == "Backspace" || e.key == "Delete") {
+      selectedCell.innerText = "";
+      if (board[r]) board[r][c] = 0;
+    }
+  }
 };
