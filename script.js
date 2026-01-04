@@ -44,6 +44,8 @@ function resetColor() {
 }
 
 var board = [[], [], [], [], [], [], [], [], []];
+var solvedBoard = [[], [], [], [], [], [], [], [], []];
+
 
 // Timer variables and helpers
 var timerInterval = null;
@@ -112,9 +114,12 @@ button.onclick = function () {
     resetColor();
 
     board = response.puzzle;
+    solvedBoard = response.solution;
     setTemp(board, temp);
     setColor(temp);
     changeBoard(board);
+    // enable solve button
+    solve.disabled = false;
     // reset and start timer when new puzzle is loaded
     resetTimer();
     startTimer();
@@ -186,5 +191,6 @@ function solveSudoku(board) {
 }
 
 solve.onclick = function () {
-  solveSudoku(board);
+  changeBoard(solvedBoard);
+  stopTimer();
 };
