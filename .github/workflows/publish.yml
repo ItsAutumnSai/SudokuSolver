@@ -25,4 +25,4 @@ jobs:
           file: ./Dockerfile
           push: true
           # This sets your specific image name and tag
-          tags: arswdzz22/sudokusolver1:tagname
+          tags: arswdzz22/sudokusolver1:v4
