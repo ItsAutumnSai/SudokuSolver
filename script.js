@@ -1,9 +1,18 @@
 var arr = [[], [], [], [], [], [], [], [], []];
 var temp = [[], [], [], [], [], [], [], [], []];
 
+var selectedCell = null;
+
 for (var i = 0; i < 9; i++) {
   for (var j = 0; j < 9; j++) {
     arr[i][j] = document.getElementById(i * 9 + j);
+    arr[i][j].onclick = function () {
+      if (selectedCell) {
+        selectedCell.classList.remove("selected");
+      }
+      selectedCell = this;
+      selectedCell.classList.add("selected");
+    };
   }
 }
 
@@ -44,6 +53,43 @@ function resetColor() {
 }
 
 var board = [[], [], [], [], [], [], [], [], []];
+var solvedBoard = [[], [], [], [], [], [], [], [], []];
+
+
+// Timer variables and helpers
+var timerInterval = null;
+var startTime = null;
+var elapsedSeconds = 0;
+
+function formatTime(sec) {
+  var m = Math.floor(sec / 60);
+  var s = sec % 60;
+  return m + ":" + (s < 10 ? "0" + s : s);
+}
+
+function startTimer() {
+  stopTimer();
+  startTime = Date.now();
+  timerInterval = setInterval(function () {
+    elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+    var el = document.getElementById("timer");
+    if (el) el.innerText = formatTime(elapsedSeconds);
+  }, 1000);
+}
+
+function stopTimer() {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+}
+
+function resetTimer() {
+  stopTimer();
+  elapsedSeconds = 0;
+  var el = document.getElementById("timer");
+  if (el) el.innerText = "0:00";
+}
 
 let button = document.getElementById("generate-sudoku");
 let solve = document.getElementById("solve");
@@ -77,9 +123,15 @@ button.onclick = function () {
     resetColor();
 
     board = response.puzzle;
+    solvedBoard = response.solution;
     setTemp(board, temp);
     setColor(temp);
     changeBoard(board);
+    // enable solve button
+    solve.disabled = false;
+    // reset and start timer when new puzzle is loaded
+    resetTimer();
+    startTimer();
   };
 
   xhrRequest.send();
@@ -114,7 +166,9 @@ function isSafe(board, r, c, no) {
 function solveSudokuHelper(board, r, c) {
   //base case
   if (r == 9) {
+    // solved: update board and stop timer
     changeBoard(board);
+    stopTimer();
     return true;
   }
   //other cases
@@ -142,9 +196,54 @@ function solveSudokuHelper(board, r, c) {
 }
 
 function solveSudoku(board) {
-  solveSudokuHelper(board, 0, 0);
+  return solveSudokuHelper(board, 0, 0);
 }
 
 solve.onclick = function () {
-  solveSudoku(board);
+  changeBoard(solvedBoard);
+  stopTimer();
+};
+
+function checkCompletion() {
+  for (var i = 0; i < 9; i++) {
+    for (var j = 0; j < 9; j++) {
+      if (parseInt(board[i][j]) !== parseInt(solvedBoard[i][j])) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+document.onkeydown = function (e) {
+  if (selectedCell) {
+    var val = parseInt(e.key);
+    var id = parseInt(selectedCell.id);
+    var r = Math.floor(id / 9);
+    var c = id % 9;
+
+    if (val > 0 && val < 10) {
+      selectedCell.innerText = val;
+      // Ensure row is initialized if we are inputting on a blank board
+      if (!board[r]) board[r] = [];
+      board[r][c] = val;
+
+      if (val != solvedBoard[r][c]) {
+        selectedCell.style.color = "red";
+      } else {
+        selectedCell.style.color = "green";
+        if (checkCompletion()) {
+          stopTimer();
+          // Small delay to allow UI to update before alert
+          setTimeout(() => {
+            alert("You did it!");
+          }, 100);
+        }
+      }
+    } else if (e.key == "Backspace" || e.key == "Delete") {
+      selectedCell.innerText = "";
+      if (board[r]) board[r][c] = 0;
+      selectedCell.style.color = "black"; // Reset color on clear
+    }
+  }
 };

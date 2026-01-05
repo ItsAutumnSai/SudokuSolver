@@ -64,6 +64,11 @@
     border-right: black 0.6px dashed;
 }
 
+
 .tdb {
     border-top: black 0.6px dashed;
+}
+
+.selected {
+    background-color: rgb(135, 206, 250) !important;
 }
